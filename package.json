@@ -1,0 +1,32 @@
+{
+  "name": "jinsheng-xiuxian-h5",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server/index.ts",
+    "build": "tsc --noEmit && vite build",
+    "build:github": "VITE_BASE_PATH=./ VITE_API_BASE_URL=https://xiuxian-game.open-brain-a0a.workers.dev vite build",
+    "start": "NODE_ENV=production tsx server/index.ts",
+    "test:game": "node /Users/owenzhao/.codex/skills/develop-web-game/scripts/web_game_playwright_client.js --url http://localhost:5173 --actions-file scripts/playwright-actions-main.json --iterations 1 --pause-ms 250 --screenshot-dir artifacts/playwright",
+    "verify:flow": "node scripts/verify-flow.mjs"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.38.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "express": "^5.2.1",
+    "lucide-react": "^0.562.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "vite": "^7.3.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.0.3",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "playwright": "^1.57.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

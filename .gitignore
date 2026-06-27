@@ -1,0 +1,7 @@
+.vercel
+.env*.local
+node_modules
+data
+artifacts
+dist
+.wrangler
