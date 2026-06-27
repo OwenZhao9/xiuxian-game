@@ -1,22 +1,86 @@
-import type { GameAction, PublicGameState } from "../../shared/types";
+import {
+  applyAction,
+  applyTimeProgress,
+  createPlayer,
+  derivePublicState,
+  GameRuleError,
+} from "../../shared/game";
+import type { GameAction, PlayerState, PublicGameState } from "../../shared/types";
 
 const SESSION_STORAGE_KEY = "xiuxian_session_id";
 const ACTIVE_API_BASE_STORAGE_KEY = "xiuxian_api_base_url";
+const STATIC_PREVIEW_STORAGE_KEY = "xiuxian_static_preview_player";
 const REQUEST_TIMEOUT_MS = 5000;
 const API_BASE_URLS = parseApiBaseUrls(import.meta.env.VITE_API_BASE_URL ?? "");
+const STATIC_PREVIEW = import.meta.env.VITE_STATIC_PREVIEW === "1";
 
 export async function fetchGameState(): Promise<PublicGameState> {
+  if (STATIC_PREVIEW) {
+    return fetchStaticPreviewState();
+  }
+
   return requestJson<PublicGameState>("/api/state", {
     method: "GET",
   });
 }
 
 export async function sendGameAction(action: GameAction): Promise<PublicGameState | { ok: true }> {
+  if (STATIC_PREVIEW) {
+    return sendStaticPreviewAction(action);
+  }
+
   return requestJson<PublicGameState | { ok: true }>("/api/action", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action }),
   });
+}
+
+async function fetchStaticPreviewState(): Promise<PublicGameState> {
+  const now = Date.now();
+  const player = loadStaticPreviewPlayer(now);
+  applyTimeProgress(player, now);
+  saveStaticPreviewPlayer(player);
+  return derivePublicState(player, now);
+}
+
+async function sendStaticPreviewAction(action: GameAction): Promise<PublicGameState | { ok: true }> {
+  if (action.type === "logout") {
+    window.localStorage.removeItem(STATIC_PREVIEW_STORAGE_KEY);
+    return { ok: true };
+  }
+
+  const now = Date.now();
+  const player = loadStaticPreviewPlayer(now);
+  try {
+    const result = applyAction(player, action, now);
+    saveStaticPreviewPlayer(result.player);
+    return derivePublicState(result.player, now, result.lastBattle);
+  } catch (error) {
+    if (error instanceof GameRuleError) {
+      throw new Error(error.message);
+    }
+    throw error;
+  }
+}
+
+function loadStaticPreviewPlayer(now: number): PlayerState {
+  const raw = window.localStorage.getItem(STATIC_PREVIEW_STORAGE_KEY);
+  if (raw) {
+    try {
+      return JSON.parse(raw) as PlayerState;
+    } catch {
+      window.localStorage.removeItem(STATIC_PREVIEW_STORAGE_KEY);
+    }
+  }
+
+  const player = createPlayer(crypto.randomUUID(), now);
+  saveStaticPreviewPlayer(player);
+  return player;
+}
+
+function saveStaticPreviewPlayer(player: PlayerState): void {
+  window.localStorage.setItem(STATIC_PREVIEW_STORAGE_KEY, JSON.stringify(player));
 }
 
 async function requestJson<T>(path: string, init: RequestInit): Promise<T> {

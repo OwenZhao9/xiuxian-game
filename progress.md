@@ -68,6 +68,17 @@ Original prompt: 按照文档要求开始实现，遇到问题不要采用妥协
     - GitHub Pages full guide flow via `npm run verify:flow`
     - Simulated Cloudflare API failure; GitHub Pages continued through Vercel fallback
     - Simulated all backend failures; loading screen showed `重试连接`
+- Switched GitHub Pages to pure static customer preview:
+  - User requested not to deploy to Tencent Cloud and accepted GitHub Pages for rough customer function preview.
+  - `npm run build:github` now sets `VITE_STATIC_PREVIEW=1`.
+  - In static preview mode, the frontend runs the same shared game rules in the browser and stores preview progress in `localStorage`.
+  - This preview does not use server-side save data and is not the final production persistence model.
+  - GitHub Pages was redeployed with:
+    `assets/index-CnKG7i7F.js`
+  - Verified:
+    - Static preview makes zero Cloudflare/Vercel/API requests
+    - GitHub Pages first interaction works with all backends blocked
+    - GitHub Pages full guide flow via `npm run verify:flow`
 
 ## Open items
 
@@ -75,3 +86,4 @@ Original prompt: 按照文档要求开始实现，遇到问题不要采用妥协
 - Exact official balance tables for 凡境 through 大乘 are not present in the provided document. Current tables are generated from the documented smooth exponential progression and should be replaced if a fixed策划数值表 is supplied.
 - Vercel production deployment is active and used as the GitHub Pages fallback API.
 - Cloudflare deployment used Wrangler's temporary account flow because this machine is not logged in to Cloudflare. Claim it within the Wrangler-provided window or redeploy after `wrangler login`.
+- Current GitHub Pages build is a static preview and does not depend on Vercel or Cloudflare at runtime.
