@@ -93,6 +93,13 @@ span {
   place-items: center;
 }
 
+.loading-content {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  padding: 24px;
+}
+
 .loading-mark {
   width: 220px;
   aspect-ratio: 1;
@@ -103,6 +110,20 @@ span {
   color: #962f26;
   font-weight: 900;
   background: #fff8e9;
+}
+
+.loading-error {
+  width: min(100%, 340px);
+  display: grid;
+  gap: 10px;
+  color: #7e241e;
+  text-align: center;
+}
+
+.loading-error p {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
 }
 
 .scene-header {

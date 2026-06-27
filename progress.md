@@ -54,10 +54,24 @@ Original prompt: 按照文档要求开始实现，遇到问题不要采用妥协
     - GitHub Pages HTML and JS asset HTTP 200
     - Cloudflare API CORS from `https://owenzhao9.github.io`
     - GitHub Pages full guide flow via `npm run verify:flow`
+- Fixed GitHub Pages loading screen getting stuck on `今生我要修成仙`:
+  - Cause: the GitHub Pages frontend depended on a single cross-origin API endpoint; when that endpoint is slow or unreachable, the app stayed on the initial loading mark.
+  - Frontend API requests now have a 5s timeout and try both:
+    - `https://xiuxian-game.open-brain-a0a.workers.dev`
+    - `https://xiuxian-game-owenzhao99s-projects.vercel.app`
+  - The loading screen now shows a retry control if every backend fails, instead of remaining non-interactive.
+  - Vercel production API was redeployed with CORS and `X-Xiuxian-Session` support for GitHub Pages.
+  - GitHub Pages was redeployed with a new static bundle:
+    `assets/index-3nXNe8qm.js`
+  - Verified:
+    - Vercel cross-origin `/api/state` and `/api/action`
+    - GitHub Pages full guide flow via `npm run verify:flow`
+    - Simulated Cloudflare API failure; GitHub Pages continued through Vercel fallback
+    - Simulated all backend failures; loading screen showed `重试连接`
 
 ## Open items
 
 - Payment provider for real first-charge flow is not specified yet. Do not fake a production payment integration.
 - Exact official balance tables for 凡境 through 大乘 are not present in the provided document. Current tables are generated from the documented smooth exponential progression and should be replaced if a fixed策划数值表 is supplied.
-- Vercel deployment is preview, not production. Promote with `vercel deploy --prod --no-color` only if explicitly requested.
+- Vercel production deployment is active and used as the GitHub Pages fallback API.
 - Cloudflare deployment used Wrangler's temporary account flow because this machine is not logged in to Cloudflare. Claim it within the Wrangler-provided window or redeploy after `wrangler login`.

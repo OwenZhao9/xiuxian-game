@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx server/index.ts",
     "build": "tsc --noEmit && vite build",
-    "build:github": "VITE_BASE_PATH=./ VITE_API_BASE_URL=https://xiuxian-game.open-brain-a0a.workers.dev vite build",
+    "build:github": "VITE_BASE_PATH=./ VITE_API_BASE_URL=https://xiuxian-game.open-brain-a0a.workers.dev,https://xiuxian-game-owenzhao99s-projects.vercel.app vite build",
     "start": "NODE_ENV=production tsx server/index.ts",
     "test:game": "node /Users/owenzhao/.codex/skills/develop-web-game/scripts/web_game_playwright_client.js --url http://localhost:5173 --actions-file scripts/playwright-actions-main.json --iterations 1 --pause-ms 250 --screenshot-dir artifacts/playwright",
     "verify:flow": "node scripts/verify-flow.mjs"

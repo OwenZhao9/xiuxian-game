@@ -8,11 +8,14 @@ const SESSION_COOKIE = "xiuxian_sid";
 const store = new KvPlayerStore();
 
 export async function handleState(request: IncomingMessage, response: ServerResponse): Promise<void> {
+  if (handleOptions(request, response)) return;
+
   if (request.method !== "GET") {
     sendJson(response, 405, { error: "Method not allowed" });
     return;
   }
 
+  applyCors(request, response);
   const now = Date.now();
   const sessionId = ensureSession(request, response);
   const player = await store.getOrCreateBySession(sessionId, now);
@@ -22,11 +25,14 @@ export async function handleState(request: IncomingMessage, response: ServerResp
 }
 
 export async function handleAction(request: IncomingMessage, response: ServerResponse): Promise<void> {
+  if (handleOptions(request, response)) return;
+
   if (request.method !== "POST") {
     sendJson(response, 405, { error: "Method not allowed" });
     return;
   }
 
+  applyCors(request, response);
   const now = Date.now();
   const sessionId = ensureSession(request, response);
   const body = await readJsonBody<{ action?: GameAction }>(request);
@@ -60,13 +66,22 @@ export async function handleAction(request: IncomingMessage, response: ServerRes
 }
 
 function ensureSession(request: IncomingMessage, response: ServerResponse): string {
+  const headerSession = request.headers["x-xiuxian-session"];
+  const sessionFromHeader = Array.isArray(headerSession) ? headerSession[0] : headerSession;
+  if (sessionFromHeader && /^[a-f0-9-]{20,}$/i.test(sessionFromHeader)) {
+    response.setHeader("X-Xiuxian-Session", sessionFromHeader);
+    return sessionFromHeader;
+  }
+
   const cookies = parseCookies(request.headers.cookie);
   const existing = cookies[SESSION_COOKIE];
   if (existing && /^[a-f0-9-]{20,}$/i.test(existing)) {
+    response.setHeader("X-Xiuxian-Session", existing);
     return existing;
   }
 
   const sessionId = randomUUID();
+  response.setHeader("X-Xiuxian-Session", sessionId);
   appendSetCookie(
     response,
     `${SESSION_COOKIE}=${encodeURIComponent(sessionId)}; Max-Age=${365 * 24 * 60 * 60}; Path=/; HttpOnly; SameSite=Lax; Secure`,
@@ -115,4 +130,23 @@ function sendJson(response: ServerResponse, statusCode: number, payload: unknown
   response.statusCode = statusCode;
   response.setHeader("Content-Type", "application/json; charset=utf-8");
   response.end(JSON.stringify(payload));
+}
+
+function handleOptions(request: IncomingMessage, response: ServerResponse): boolean {
+  if (request.method !== "OPTIONS") return false;
+  applyCors(request, response);
+  response.statusCode = 204;
+  response.end();
+  return true;
+}
+
+function applyCors(request: IncomingMessage, response: ServerResponse): void {
+  const origin = request.headers.origin;
+  if (!origin) return;
+
+  response.setHeader("Access-Control-Allow-Origin", origin);
+  response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Xiuxian-Session");
+  response.setHeader("Access-Control-Expose-Headers", "X-Xiuxian-Session");
+  response.setHeader("Vary", "Origin");
 }

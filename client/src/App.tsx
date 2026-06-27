@@ -114,6 +114,11 @@ export function App() {
     [setGame],
   );
 
+  const retryLoad = useCallback(() => {
+    setError(null);
+    load().catch((loadError) => setError(loadError.message));
+  }, [load]);
+
   useEffect(() => {
     window.render_game_to_text = () => {
       if (!game) return JSON.stringify({ status: "loading" });
@@ -165,7 +170,18 @@ export function App() {
   if (!game) {
     return (
       <div className="app-shell loading-shell">
-        <div className="loading-mark">今生我要修成仙</div>
+        <div className="loading-content">
+          <div className="loading-mark">今生我要修成仙</div>
+          {error ? (
+            <div className="loading-error" role="alert">
+              <p>{error}</p>
+              <button className="primary-action" onClick={retryLoad}>
+                <RefreshCw size={16} />
+                重试连接
+              </button>
+            </div>
+          ) : null}
+        </div>
       </div>
     );
   }
