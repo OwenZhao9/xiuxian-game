@@ -41,6 +41,19 @@ Original prompt: 按照文档要求开始实现，遇到问题不要采用妥协
     - Cloudflare `/api/state` returns JSON
     - Cloudflare Playwright smoke test
     - Cloudflare full guide flow via `npm run verify:flow`
+- Added and deployed GitHub Pages frontend:
+  - Repository:
+    https://github.com/OwenZhao9/xiuxian-game
+  - Pages URL:
+    https://owenzhao9.github.io/xiuxian-game/
+  - Pages serves static assets from `gh-pages` and uses the Cloudflare Worker backend for server-side save data.
+  - `gh-pages` was force-updated to contain only built static files:
+    `.nojekyll`, `index.html`, and `assets/`.
+  - Verified:
+    - `npm run build:github`
+    - GitHub Pages HTML and JS asset HTTP 200
+    - Cloudflare API CORS from `https://owenzhao9.github.io`
+    - GitHub Pages full guide flow via `npm run verify:flow`
 
 ## Open items
 

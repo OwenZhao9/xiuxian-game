@@ -1,5 +1,6 @@
 .vercel
 .env*.local
+.vite
 node_modules
 data
 artifacts
